@@ -27,14 +27,14 @@ class Board {
     private:
         vector<char> cells;
     public:
-        Board() { // Khoi tao bang tro choi
+        Board() { // Khởi tạo bảng trò chơi
             cells.resize(9,' ');
             for(int i=0;i<9;i++) cells[i] = (char)(i+49);
         }
-        void clear(){ // Khoi tao lai gia tri cho lan choi tiep theo
+        void clear(){ // Khởi tạo lại giá trị cho lần chơi tiếp theo
             for(int i=0;i<9;i++) cells[i] = (char)(i+49);
         }
-        void display() { // In bang tro choi ra man  hinh
+        void display() { // In bảng trò chơi ra màn hình
             cout << "\t ";
             if (cells[0] == 'X') cout << LIGHT_BLUE << cells[0] << RESET;
             else if (cells[0] == 'O') cout << LIGHT_GREEN << cells[0] << RESET;
@@ -79,7 +79,7 @@ class Board {
             else cout << cells[8] ;
             cout << "\n";
         }
-        bool checkWin(char symbol) { // Kiem tra xem da co nguoi thang hay chua
+        bool checkWin(char symbol) { // Kiểm tra xem đã có người chiến thắng hay chưa
             for (int i = 0; i < 3; ++i) {
                 if (cells[i * 3] == symbol && cells[i * 3 + 1] == symbol && cells[i * 3 + 2] == symbol) return true;
                 if (cells[i] == symbol && cells[i + 3] == symbol && cells[i + 6] == symbol) return true;
@@ -88,27 +88,27 @@ class Board {
                 (cells[2] == symbol && cells[4] == symbol && cells[6] == symbol)) return true;
             return false;
         }
-        bool isFull() { // Kiem tra xem bang da duoc dien het chua
+        bool isFull() { // Kiểm tra xem bảng đã được điền hết hay chưa
             for (char cell : cells) if (cell>='1' && cell <='9') return false;
             return true;
         }
-        bool updateCell(int cell, char symbol) { // Danh dau vao bang  
+        bool updateCell(int cell, char symbol) { // Kiểm tra xem vị trí đó có hợp lệ hay không nếu có thì đánh dấu vào bảng
             if (cell < 0 || cell >= 9 || (cell<='1' && cell >='9')) return false;
             cells[cell] = symbol;
             return true;
         }
-        void makeMove(int cell, char symbol) { 
+        void makeMove(int cell, char symbol) { // Đánh dấu vào bảng tạm thời để duyệt qua các nước đi ở hàm minimax
             cells[cell]=symbol;
         }
-        vector<int> available () { // Kiem tra nhung o nao chua duoc danh dau
+        vector<int> available () { // Trả về 1 vector lưu các vị trí còn trống
             vector<int> moves;
             for (int i=0;i<9;i++) if (cells[i]>='1' && cells[i] <='9') moves.push_back(i);
             return moves;
         }
-        bool check(int cell){
+        bool check(int cell){ // Kiểm tra xem vị trí định đánh dấu có hợp lệ hay không
             return !(cells[cell]>='1' && cells[cell]<='9');
         }
-        bool max_o(int cell){
+        bool max_o(int cell){ // Kiểm tra xem vị trí định đánh dấu có hợp lệ hay không
             return (cell > 8 || cell < 0);
         }
 };
@@ -117,15 +117,15 @@ class Player {
     private:
         char symbol;
     public:
-        Player(char symbol) : symbol(symbol) {}
-        char getSymbol() { return symbol; }
-        virtual void getMove(Board& board) = 0;
+        Player(char symbol) : symbol(symbol) {} // Hàm khởi tạo lớp Player
+        char getSymbol() { return symbol; } // Trả về biểu tượng của người chơi
+        virtual void getMove(Board& board) = 0; // Đa hình đánh dấu nước đi vào trong bảng
 };
 
 class HumanPlayer : public Player {
     public:
-        HumanPlayer(char _symbol) : Player(_symbol) {}
-        void getMove(Board& board) {
+        HumanPlayer(char _symbol) : Player(_symbol) {} // Hàm khởi tạo lớp HumanPlayer kế thừa từ lớp Player
+        void getMove(Board& board) { // Kiểm tra tính hợp lệ của nước đi và đánh dấu nước đi vào bảng
             string move;
             int cnt=0,k=0;
             do {
@@ -138,7 +138,7 @@ class HumanPlayer : public Player {
                 stringstream ss(move);
                 ss >> k;k--;
             } while (k < 0 || k > 8 || board.check(k)); // Kiểm tra ô có hợp lệ và trống không
-            board.updateCell(k, getSymbol());
+            board.updateCell(k, getSymbol()); // Cập nhật vị trí đi vào bảng
         }
 };
 
@@ -146,9 +146,9 @@ class ComputerPlayer : public Player {
     private:
         char opponentSymbol;
     public:
-        ComputerPlayer(char _symbol) : Player(_symbol) {}
-        void setSymbol(char c) { opponentSymbol = c; }
-        int minimax(Board &board, bool maximizingPlayer, char selfSymbol, char opponentSymbol) { // Thuat toan minimax nham giup may tinh co the lua chon ra nuoc di hop ly nhat
+        ComputerPlayer(char _symbol) : Player(_symbol) {}// Hàm khởi tạo lớp ComputerPlayer kế thừa từ lớp Player
+        void setSymbol(char c) { opponentSymbol = c; } // Hàm lấy biểu tượng của đối thủ
+        int minimax(Board &board, bool maximizingPlayer, char selfSymbol, char opponentSymbol) { // Thuật toán minimax giúp máy tính có thể tính toán và đưa ra nước đi tốt nhất
             if (board.checkWin(selfSymbol)) return 1;
             else if (board.checkWin(opponentSymbol)) return -1;
             else if (board.isFull()) return 0;
@@ -175,7 +175,7 @@ class ComputerPlayer : public Player {
                 return bestScore;
             }
         }
-        int getBestMove(Board& board, char selfsymbol, char opponentSymbol) { // Ra soat tat ca cac o de tim ra o uu nhat
+        int getBestMove(Board& board, char selfsymbol, char opponentSymbol) { // Kiểm tra tất cả các vị trí để tìm vị trí đi tốt nhất
             int bestMove, bestScore = INT_MIN;
             vector<int> moves = board.available();
             for (int move: moves) {
@@ -187,9 +187,9 @@ class ComputerPlayer : public Player {
             cout << LIGHT_CYAN << "Vi tri: "<< bestMove + 1 << endl << RESET;
             return bestMove;
         }
-        void getMove(Board& board) { // Danh dau nuoc di da chon vao bang
+        void getMove(Board& board) { // Đánh dấu nước đi đã chọn vào bảng
             cout << endl;
-            board.updateCell(getBestMove(board, getSymbol(), opponentSymbol), getSymbol());
+            board.updateCell(getBestMove(board, getSymbol(), opponentSymbol), getSymbol()); // Cập nhật lại bảng
         }
 };
 
@@ -201,7 +201,7 @@ class Game {
         Player *currentPlayer;
     public:
         
-        void play() {
+        void play() { // Hàm chính xử lý thông tin của trò chơi
             bool test = true;
             int k = 0;
             string n;
@@ -341,9 +341,10 @@ class Game {
                 } 
                 else switchPlayer();
             }
+            if (!vs) cin.ignore();
         }
-        void start() {
-            
+
+        void start() { // Hàm bắt đầu trò chơi
             while (0==0)
             {
                 system("cls");
@@ -352,7 +353,7 @@ class Game {
                 string c;
                 cout << LIGHT_GREEN;
                 while(getline(cin, c)) {
-                    for (int i=0;i<c.length();i++) if (c[i]==' ') c.erase(i,1),i--;
+                    for (int i=0;i<c.length();i++) if (c[i]==' ' || c[i]=='\n') c.erase(i,1),i--;
                     c[0] = toupper(c[0]);
                     cout << RESET;
                     if(c == "Y"){
@@ -371,11 +372,12 @@ class Game {
             }
             cin.ignore();
         }
-        void switchPlayer() {
+        void switchPlayer() { // Hàm hoán đổi vị trí chơi giữa 2 người chơi
             if (currentPlayer == player1) currentPlayer = player2;
             else currentPlayer = player1;
         }
 };
+
 int main()
 {
     Game play;
